@@ -1,3 +1,25 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc,
+    onSnapshot
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyDoBhC_ZvYRpgKhrOcMzB319Bb3u6AKP5U",
+    authDomain: "nice-family-trip.firebaseapp.com",
+    projectId: "nice-family-trip",
+    storageBucket: "nice-family-trip.firebasestorage.app",
+    messagingSenderId: "801930147309",
+    appId: "1:801930147309:web:0f1b5ca488546ca84ce3e4",
+    measurementId: "G-DPVRW9S3FX"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
+const tripRef = doc(db, "trips", "nice-family-trip");
 const STORAGE_KEY = "nice-family-trip-planner";
 
 const defaultData = {
@@ -278,17 +300,36 @@ const modalDone = document.getElementById("modalDone");
 const saveCard = document.getElementById("saveCard");
 const deleteCard = document.getElementById("deleteCard");
 
-function loadData() {
-    const saved = localStorage.getItem(STORAGE_KEY);
-
-    if (!saved) {
-        return structuredClone(defaultData);
-    }
+async function loadData() {
+    const savedLocal = localStorage.getItem(STORAGE_KEY);
 
     try {
-        return JSON.parse(saved);
-    } catch {
+        const snapshot = await getDoc(tripRef);
+
+        if (snapshot.exists()) {
+            return snapshot.data();
+        }
+
+        await setDoc(tripRef, defaultData);
         return structuredClone(defaultData);
+    } catch (error) {
+        console.error("Firebase load error:", error);
+
+        if (savedLocal) {
+            return JSON.parse(savedLocal);
+        }
+
+        return structuredClone(defaultData);
+    }
+}
+
+async function saveData() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+    try {
+        await setDoc(tripRef, data);
+    } catch (error) {
+        console.error("Firebase save error:", error);
     }
 }
 function sortCardsByTime(day) {
@@ -298,9 +339,6 @@ function sortCardsByTime(day) {
 
         return a.time.localeCompare(b.time);
     });
-}
-function saveData() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
 function getCurrentDay() {
@@ -490,4 +528,20 @@ document.addEventListener("keydown", event => {
     }
 });
 
-render();
+async function init() {
+    data = await loadData();
+    currentDayId = data.selectedDay;
+
+    render();
+
+    onSnapshot(tripRef, snapshot => {
+        if (!snapshot.exists()) return;
+
+        data = snapshot.data();
+        currentDayId = data.selectedDay;
+
+        render();
+    });
+}
+
+init();
