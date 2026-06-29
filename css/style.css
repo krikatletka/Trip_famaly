@@ -206,6 +206,11 @@ button {
 .card-main p {
     color: #64748b;
     line-height: 1.45;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 120px;
+    overflow-y: auto;
+    padding-right: 6px;
 }
 
 .card-time {
