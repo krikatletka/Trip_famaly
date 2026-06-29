@@ -1,10 +1,84 @@
 <!DOCTYPE html>
-<html lang="ru"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Nice Trip Planner</title>
-<link rel="stylesheet" href="css/style.css">
-</head><body>
-<header><h1>🇫🇷 Nice Trip Planner</h1><p>30 июня – 4 июля</p></header>
-<main id="days"></main>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nice Family Trip</title>
+
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app">
+
+    <header class="hero">
+        <div>
+            <p class="eyebrow">🇫🇷 семейное путешествие</p>
+            <h1>Nice Family Trip</h1>
+            <p class="dates">30 июня — 4 июля</p>
+        </div>
+
+        <div class="hotel-card">
+            <span>🏨 Отель</span>
+            <strong>161 Promenade des Anglais</strong>
+            <a href="https://www.google.com/maps/search/?api=1&query=161%20Promenade%20des%20Anglais%2006000%20Nice%20France" target="_blank">
+                Открыть карту
+            </a>
+        </div>
+    </header>
+
+    <nav class="tabs" id="tabs"></nav>
+
+    <main>
+        <section class="day-header">
+            <div>
+                <p class="small">План на день</p>
+                <h2 id="dayTitle"></h2>
+            </div>
+
+            <button class="add-btn" id="addCardBtn">
+                + Добавить карточку
+            </button>
+        </section>
+
+        <section class="board" id="board"></section>
+    </main>
+
+</div>
+
+<div class="modal hidden" id="modal">
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+
+    <div class="modal-card">
+        <button class="close-btn" id="closeModal">×</button>
+
+        <label>
+            Название
+            <input id="modalTitle" type="text" />
+        </label>
+
+        <label>
+            Время
+            <input id="modalTime" type="time" />
+        </label>
+
+        <label>
+            Описание
+            <textarea id="modalDescription" rows="7"></textarea>
+        </label>
+
+        <label class="checkbox-row">
+            <input id="modalDone" type="checkbox" />
+            Выполнено
+        </label>
+
+        <div class="modal-actions">
+            <button class="delete-btn" id="deleteCard">Удалить</button>
+            <button class="save-btn" id="saveCard">Сохранить</button>
+        </div>
+    </div>
+</div>
+
 <script src="js/app.js"></script>
-</body></html>
+</body>
+</html>

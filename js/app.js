@@ -1,24 +1,484 @@
-const data=[
-{day:'30 июня',tasks:['✈️ Прилет 16:30','🚋 Трамвай L2 до отеля','🏨 Заселение','🛒 Покупки','🍽️ Ресторан (?)','🌅 Прогулка']},
-{day:'1 июля',tasks:['🏖️ Пляж','📍 Le Plongeoir','🏛️ Старый город','📸 Фотографии','🍽️ Ужин (?)']},
-{day:'2 июля',tasks:['🇲🇨 Монако','🛍️ Шопинг','🍽️ Ресторан (?)']},
-{day:'3 июля',tasks:['🏖️ Пляж','🛍️ Магазины','🌇 Закат']},
-{day:'4 июля',tasks:['🎒 Сбор вещей','✈️ Аэропорт']}
-];
-const app=document.getElementById('days');
-data.forEach((d,di)=>{
- const c=document.createElement('section');
- c.className='card';
- c.innerHTML=`<h2>${d.day}</h2><small>Отмеченные пункты сохраняются автоматически.</small>`;
- d.tasks.forEach((t,ti)=>{
-   const id=`${di}-${ti}`;
-   const l=document.createElement('label');
-   const cb=document.createElement('input');
-   cb.type='checkbox';
-   cb.checked=localStorage.getItem(id)==='1';
-   cb.onchange=()=>localStorage.setItem(id,cb.checked?'1':'0');
-   l.append(cb,' ',t);
-   c.append(l);
- });
- app.append(c);
+const STORAGE_KEY = "nice-family-trip-planner";
+
+const defaultData = {
+    selectedDay: "day1",
+
+    days: [
+        {
+            id: "day1",
+            tab: "30 июня",
+            title: "День прилёта",
+            cards: [
+                {
+                    id: "arrival",
+                    icon: "✈️",
+                    title: "Прилёт в Ниццу",
+                    time: "16:30",
+                    description: "Прилетаем в аэропорт Nice Côte d’Azur, забираем багаж и выходим к транспорту.",
+                    done: false
+                },
+                {
+                    id: "tram",
+                    icon: "🚋",
+                    title: "Трамвай L2 до отеля",
+                    time: "17:15",
+                    description: "Едем на Tram L2 от аэропорта в сторону города. Адрес отеля: 161 Promenade des Anglais.",
+                    done: false
+                },
+                {
+                    id: "checkin",
+                    icon: "🏨",
+                    title: "Заселение",
+                    time: "17:45",
+                    description: "Заселяемся, оставляем вещи, немного отдыхаем.",
+                    done: false
+                },
+                {
+                    id: "shop",
+                    icon: "🛒",
+                    title: "Магазин",
+                    time: "18:30",
+                    description: "Купить воду, еду, снеки, шампунь и всё необходимое.",
+                    done: false
+                },
+                {
+                    id: "dinner",
+                    icon: "🍽️",
+                    title: "Ужин",
+                    time: "20:00",
+                    description: "Ресторан пока под вопросом. Нужно выбрать и забронировать.",
+                    done: false
+                },
+                {
+                    id: "walk",
+                    icon: "🌅",
+                    title: "Прогулка по морю",
+                    time: "21:30",
+                    description: "Гуляем по Promenade des Anglais, пляж, закат, фотографии.",
+                    done: false
+                }
+            ]
+        },
+        {
+            id: "day2",
+            tab: "1 июля",
+            title: "Пляж и Старый город",
+            cards: [
+                {
+                    id: "beach1",
+                    icon: "🏖️",
+                    title: "Утренний пляж",
+                    time: "08:30",
+                    description: "Купаемся утром, пока не слишком жарко. Взять SPF, полотенце и воду.",
+                    done: false
+                },
+                {
+                    id: "breakfast1",
+                    icon: "☕",
+                    title: "Завтрак / кафе",
+                    time: "10:30",
+                    description: "Выбрать красивое кафе рядом с морем или по дороге.",
+                    done: false
+                },
+                {
+                    id: "plongeoir",
+                    icon: "📍",
+                    title: "Le Plongeoir",
+                    time: "12:00",
+                    description: "Красивое место у моря. Можно пообедать или просто посмотреть и сделать фото.",
+                    done: false
+                },
+                {
+                    id: "rest",
+                    icon: "❄️",
+                    title: "Отдых в жару",
+                    time: "14:00",
+                    description: "В самое жаркое время лучше не ходить по солнцу. Отдохнуть, зайти в кафе или вернуться в отель.",
+                    done: false
+                },
+                {
+                    id: "oldtown",
+                    icon: "🏛️",
+                    title: "Старый город",
+                    time: "17:00",
+                    description: "Vieux Nice, Cours Saleya, Place Masséna, красивые улочки и фото.",
+                    done: false
+                },
+                {
+                    id: "dinner2",
+                    icon: "🍽️",
+                    title: "Ужин",
+                    time: "20:30",
+                    description: "Ресторан нужно выбрать. Лучше обычная одежда, без строгого дресс-кода.",
+                    done: false
+                }
+            ]
+        },
+        {
+            id: "day3",
+            tab: "2 июля",
+            title: "Монако",
+            cards: [
+                {
+                    id: "train-monaco",
+                    icon: "🚆",
+                    title: "Поездка в Монако",
+                    time: "09:30",
+                    description: "Выезд утром. Нужно уточнить транспорт и время.",
+                    done: false
+                },
+                {
+                    id: "casino",
+                    icon: "🎰",
+                    title: "Казино Монте-Карло",
+                    time: "11:00",
+                    description: "Посмотреть красивую площадь, сделать фото, прогуляться рядом.",
+                    done: false
+                },
+                {
+                    id: "port",
+                    icon: "🛥️",
+                    title: "Порт Hercules",
+                    time: "12:30",
+                    description: "Прогулка у яхт, красивые виды и фото.",
+                    done: false
+                },
+                {
+                    id: "lunch-monaco",
+                    icon: "🍽️",
+                    title: "Обед",
+                    time: "13:30",
+                    description: "Ресторан под вопросом. Нужно выбрать место.",
+                    done: false
+                },
+                {
+                    id: "shopping-monaco",
+                    icon: "🛍️",
+                    title: "Шопинг",
+                    time: "15:30",
+                    description: "Магазины одежды. Нужно решить, где именно.",
+                    done: false
+                },
+                {
+                    id: "back-nice",
+                    icon: "🌙",
+                    title: "Возвращение в Ниццу",
+                    time: "19:00",
+                    description: "Время возвращения нужно обсудить.",
+                    done: false
+                }
+            ]
+        },
+        {
+            id: "day4",
+            tab: "3 июля",
+            title: "Пляж, шопинг и отдых",
+            cards: [
+                {
+                    id: "beach3",
+                    icon: "🏖️",
+                    title: "Пляж утром",
+                    time: "09:00",
+                    description: "Море, отдых, спокойное утро.",
+                    done: false
+                },
+                {
+                    id: "shopping-nice",
+                    icon: "🛍️",
+                    title: "Шопинг в Ницце",
+                    time: "12:00",
+                    description: "Nice Étoile, Galeries Lafayette, Avenue Jean Médecin или CAP3000.",
+                    done: false
+                },
+                {
+                    id: "lunch3",
+                    icon: "🍽️",
+                    title: "Обед",
+                    time: "14:00",
+                    description: "Выбрать кафе или ресторан.",
+                    done: false
+                },
+                {
+                    id: "free-time",
+                    icon: "✨",
+                    title: "Свободное время",
+                    time: "16:00",
+                    description: "Можно добавить достопримечательность, кафе, прогулку или морскую активность.",
+                    done: false
+                },
+                {
+                    id: "sunset3",
+                    icon: "🌅",
+                    title: "Закат и прогулка",
+                    time: "20:30",
+                    description: "Прогулка вдоль моря, фото, спокойный вечер.",
+                    done: false
+                }
+            ]
+        },
+        {
+            id: "day5",
+            tab: "4 июля",
+            title: "День отъезда",
+            cards: [
+                {
+                    id: "breakfast-last",
+                    icon: "☕",
+                    title: "Завтрак",
+                    time: "09:00",
+                    description: "Последнее утро в Ницце.",
+                    done: false
+                },
+                {
+                    id: "last-walk",
+                    icon: "🌊",
+                    title: "Последняя прогулка у моря",
+                    time: "10:00",
+                    description: "Если будет время — пройтись по Promenade des Anglais.",
+                    done: false
+                },
+                {
+                    id: "packing",
+                    icon: "🎒",
+                    title: "Собрать вещи",
+                    time: "11:00",
+                    description: "Проверить документы, зарядки, косметику, покупки.",
+                    done: false
+                },
+                {
+                    id: "airport",
+                    icon: "✈️",
+                    title: "Поездка в аэропорт",
+                    time: "12:00",
+                    description: "Транспорт и точное время нужно уточнить.",
+                    done: false
+                }
+            ]
+        }
+    ]
+};
+
+let data = loadData();
+let currentDayId = data.selectedDay;
+let editingCardId = null;
+let draggedCardId = null;
+
+const tabs = document.getElementById("tabs");
+const board = document.getElementById("board");
+const dayTitle = document.getElementById("dayTitle");
+const addCardBtn = document.getElementById("addCardBtn");
+
+const modal = document.getElementById("modal");
+const modalBackdrop = document.getElementById("modalBackdrop");
+const closeModal = document.getElementById("closeModal");
+const modalTitle = document.getElementById("modalTitle");
+const modalTime = document.getElementById("modalTime");
+const modalDescription = document.getElementById("modalDescription");
+const modalDone = document.getElementById("modalDone");
+const saveCard = document.getElementById("saveCard");
+const deleteCard = document.getElementById("deleteCard");
+
+function loadData() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+
+    if (!saved) {
+        return structuredClone(defaultData);
+    }
+
+    try {
+        return JSON.parse(saved);
+    } catch {
+        return structuredClone(defaultData);
+    }
+}
+
+function saveData() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function getCurrentDay() {
+    return data.days.find(day => day.id === currentDayId);
+}
+
+function getCard(cardId) {
+    const day = getCurrentDay();
+    return day.cards.find(card => card.id === cardId);
+}
+
+function renderTabs() {
+    tabs.innerHTML = "";
+
+    data.days.forEach(day => {
+        const button = document.createElement("button");
+
+        button.className = `tab ${day.id === currentDayId ? "active" : ""}`;
+        button.textContent = day.tab;
+
+        button.addEventListener("click", () => {
+            currentDayId = day.id;
+            data.selectedDay = day.id;
+            saveData();
+            render();
+        });
+
+        tabs.appendChild(button);
+    });
+}
+
+function renderBoard() {
+    const day = getCurrentDay();
+
+    dayTitle.textContent = day.title;
+    board.innerHTML = "";
+
+    day.cards.forEach(card => {
+        const cardElement = document.createElement("article");
+
+        cardElement.className = `trip-card ${card.done ? "done" : ""}`;
+        cardElement.draggable = true;
+        cardElement.dataset.id = card.id;
+
+        cardElement.innerHTML = `
+            <div class="card-icon">${card.icon}</div>
+
+            <div class="card-main">
+                <h3>${escapeHTML(card.title)}</h3>
+                <p>${escapeHTML(card.description || "Нажми, чтобы добавить описание.")}</p>
+            </div>
+
+            <div class="card-time">${card.time || "?"}</div>
+        `;
+
+        cardElement.addEventListener("click", () => {
+            openModal(card.id);
+        });
+
+        cardElement.addEventListener("dragstart", () => {
+            draggedCardId = card.id;
+            cardElement.classList.add("dragging");
+        });
+
+        cardElement.addEventListener("dragend", () => {
+            draggedCardId = null;
+            cardElement.classList.remove("dragging");
+        });
+
+        cardElement.addEventListener("dragover", event => {
+            event.preventDefault();
+        });
+
+        cardElement.addEventListener("drop", event => {
+            event.preventDefault();
+
+            const targetCardId = cardElement.dataset.id;
+
+            if (draggedCardId && draggedCardId !== targetCardId) {
+                reorderCards(draggedCardId, targetCardId);
+            }
+        });
+
+        board.appendChild(cardElement);
+    });
+}
+
+function reorderCards(fromId, toId) {
+    const day = getCurrentDay();
+
+    const fromIndex = day.cards.findIndex(card => card.id === fromId);
+    const toIndex = day.cards.findIndex(card => card.id === toId);
+
+    const [movedCard] = day.cards.splice(fromIndex, 1);
+
+    day.cards.splice(toIndex, 0, movedCard);
+
+    saveData();
+    renderBoard();
+}
+
+function openModal(cardId) {
+    editingCardId = cardId;
+
+    const card = getCard(cardId);
+
+    modalTitle.value = card.title;
+    modalTime.value = card.time || "";
+    modalDescription.value = card.description || "";
+    modalDone.checked = Boolean(card.done);
+
+    modal.classList.remove("hidden");
+}
+
+function closeModalWindow() {
+    modal.classList.add("hidden");
+    editingCardId = null;
+}
+
+function saveCurrentCard() {
+    const card = getCard(editingCardId);
+
+    card.title = modalTitle.value.trim() || "Без названия";
+    card.time = modalTime.value;
+    card.description = modalDescription.value.trim();
+    card.done = modalDone.checked;
+
+    saveData();
+    closeModalWindow();
+    render();
+}
+
+function deleteCurrentCard() {
+    const day = getCurrentDay();
+
+    day.cards = day.cards.filter(card => card.id !== editingCardId);
+
+    saveData();
+    closeModalWindow();
+    render();
+}
+
+function addCard() {
+    const day = getCurrentDay();
+
+    const newCard = {
+        id: `card-${Date.now()}`,
+        icon: "✨",
+        title: "Новая карточка",
+        time: "",
+        description: "Нажми и добавь описание.",
+        done: false
+    };
+
+    day.cards.push(newCard);
+
+    saveData();
+    renderBoard();
+    openModal(newCard.id);
+}
+
+function escapeHTML(value) {
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function render() {
+    renderTabs();
+    renderBoard();
+}
+
+addCardBtn.addEventListener("click", addCard);
+saveCard.addEventListener("click", saveCurrentCard);
+deleteCard.addEventListener("click", deleteCurrentCard);
+closeModal.addEventListener("click", closeModalWindow);
+modalBackdrop.addEventListener("click", closeModalWindow);
+
+document.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+        closeModalWindow();
+    }
 });
+
+render();
