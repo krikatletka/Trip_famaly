@@ -280,7 +280,7 @@ const defaultData = {
     ]
 };
 
-let data = loadData();
+let data = structuredClone(defaultData);
 let currentDayId = data.selectedDay;
 let editingCardId = null;
 let draggedCardId = null;
@@ -517,8 +517,8 @@ function addCard() {
         link: ""
     };
 
-    sortCardsByTime(day);
     day.cards.push(newCard);
+    sortCardsByTime(day);
 
     saveData();
     renderBoard();
