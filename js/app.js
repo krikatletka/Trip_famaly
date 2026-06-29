@@ -296,6 +296,7 @@ const closeModal = document.getElementById("closeModal");
 const modalTitle = document.getElementById("modalTitle");
 const modalTime = document.getElementById("modalTime");
 const modalDescription = document.getElementById("modalDescription");
+const modalLink = document.getElementById("modalLink");
 const modalDone = document.getElementById("modalDone");
 const saveCard = document.getElementById("saveCard");
 const deleteCard = document.getElementById("deleteCard");
@@ -389,10 +390,23 @@ function renderBoard() {
             <div class="card-main">
                 <h3>${escapeHTML(card.title)}</h3>
                 <p>${escapeHTML(card.description || "Нажми, чтобы добавить описание.")}</p>
+
+                ${
+                    card.link
+                        ? `<a class="map-link" href="${escapeHTML(card.link)}" target="_blank">📍 Открыть</a>`
+                        : ""
+                }
             </div>
 
             <div class="card-time">${card.time || "?"}</div>
         `;
+        const link = cardElement.querySelector(".map-link");
+
+if (link) {
+    link.addEventListener("click", event => {
+        event.stopPropagation();
+    });
+}
 
         cardElement.addEventListener("click", () => {
             openModal(card.id);
@@ -444,7 +458,7 @@ function openModal(cardId) {
     editingCardId = cardId;
 
     const card = getCard(cardId);
-
+    modalLink.value = card.link || "";
     modalTitle.value = card.title;
     modalTime.value = card.time || "";
     modalDescription.value = card.description || "";
@@ -465,7 +479,7 @@ function saveCurrentCard() {
     card.time = modalTime.value;
     card.description = modalDescription.value.trim();
     card.done = modalDone.checked;
-
+    card.link = modalLink.value.trim();
     sortCardsByTime(getCurrentDay());
     saveData();
     closeModalWindow();
@@ -491,7 +505,8 @@ function addCard() {
         title: "Новая карточка",
         time: "",
         description: "Нажми и добавь описание.",
-        done: false
+        done: false,
+        link: ""
     };
 
     sortCardsByTime(day);
