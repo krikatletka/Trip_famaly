@@ -475,12 +475,20 @@ function closeModalWindow() {
 function saveCurrentCard() {
     const card = getCard(editingCardId);
 
+    if (!card) {
+        closeModalWindow();
+        render();
+        return;
+    }
+
     card.title = modalTitle.value.trim() || "Без названия";
     card.time = modalTime.value;
     card.description = modalDescription.value.trim();
-    card.done = modalDone.checked;
     card.link = modalLink.value.trim();
+    card.done = modalDone.checked;
+
     sortCardsByTime(getCurrentDay());
+
     saveData();
     closeModalWindow();
     render();
@@ -552,7 +560,14 @@ async function init() {
     onSnapshot(tripRef, snapshot => {
         if (!snapshot.exists()) return;
 
-        data = snapshot.data();
+        const freshData = snapshot.data();
+
+        if (editingCardId) {
+            data = freshData;
+            return;
+        }
+
+        data = freshData;
         currentDayId = data.selectedDay;
 
         render();
