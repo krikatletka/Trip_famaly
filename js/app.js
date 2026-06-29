@@ -291,7 +291,14 @@ function loadData() {
         return structuredClone(defaultData);
     }
 }
+function sortCardsByTime(day) {
+    day.cards.sort((a, b) => {
+        if (!a.time) return 1;
+        if (!b.time) return -1;
 
+        return a.time.localeCompare(b.time);
+    });
+}
 function saveData() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
@@ -421,6 +428,7 @@ function saveCurrentCard() {
     card.description = modalDescription.value.trim();
     card.done = modalDone.checked;
 
+    sortCardsByTime(getCurrentDay());
     saveData();
     closeModalWindow();
     render();
@@ -448,6 +456,7 @@ function addCard() {
         done: false
     };
 
+    sortCardsByTime(day);
     day.cards.push(newCard);
 
     saveData();
